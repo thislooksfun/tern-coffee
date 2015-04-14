@@ -3,11 +3,32 @@ var coffee = require('coffee-script');
 var SourceMapConsumer = require('source-map').SourceMapConsumer;
 
 
-var compile = function (source) {
-    return coffee.compile(source, {
-        bare: true,
-        sourceMap: true
-    });
+var toLineCol = function (offset, lines) {
+    var position = {
+        line: 1,
+        column: 0
+    };
+    var len = lines.length;
+    var sumOffset = 0;
+    for (var i = 0; i < len; i++) {
+        var lineLen = lines[i].length + 1;
+        if (sumOffset + lineLen > offset) {
+            position.line = i + 1;
+            position.column = offset - sumOffset;
+            break;
+        }
+        sumOffset += lineLen;
+    }
+    return position;
+};
+
+var toOffset = function (position, lines) {
+    var offset = 0;
+    for (var i = 0; i < position.line; i++) {
+        offset += lines[i].length;
+    }
+    offset += position.column;
+    return offset;
 };
 
 var setOriginalPositions = function (ast, compiled) {
@@ -37,36 +58,15 @@ var getCompiledPosition = function (offset, compiled) {
     return toOffset(jsPosition, compiled.js.split('\n'));
 };
 
-var toOffset = function (position, lines) {
-    var offset = 0;
-    for (var i = 0; i < position.line; i++) {
-        offset += lines[i].length;
-    }
-    offset += position.column;
-    return offset;
-};
-
-var toLineCol = function (offset, lines) {
-    var position = {
-        line: 1,
-        column: 0
-    };
-    var len = lines.length;
-    var sumOffset = 0;
-    for (var i = 0; i < len; i++) {
-        var lineLen = lines[i].length + 1;
-        if (sumOffset + lineLen > offset) {
-            position.line = i + 1;
-            position.column = offset - sumOffset;
-            break;
-        }
-        sumOffset += lineLen;
-    }
-    return position;
-};
-
 var modifyQuery = function (query, compiled) {
     query.end = getCompiledPosition(query.end, compiled);
+};
+
+var compile = function (source) {
+    return coffee.compile(source, {
+        bare: true,
+        sourceMap: true
+    });
 };
 
 var saveCompiled = function (server, name, source) {
@@ -110,6 +110,10 @@ tern.registerPlugin('coffee', function (server) {
     // Overwrite request
     server.request = (function (request) {
         return function (doc, callback) {
+            if (isCoffee(doc.query.file)) {
+                return request.call(server, doc, callback);
+            }
+
             if (doc.files) {
                 // TODO
             }
