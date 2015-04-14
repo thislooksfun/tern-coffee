@@ -1,10 +1,10 @@
 {
-    "name": "tern-coffee",
-    "version": "0.1.0",
+    "name": "tern-coffee-source-map",
+    "version": "0.0.1",
     "description": "Tern plugin for CoffeeScript",
-    "homepage": "https://github.com/othree/tern-coffee",
-    "repository": "https://github.com/othree/tern-coffee.git",
-    "author": "othree (https://github.com/othree)",
+    "homepage": "https://github.com/katspaugh/tern-coffee",
+    "repository": "https://github.com/katspaugh/tern-coffee.git",
+    "author": "katspaugh (katspaugh@gmail.com)",
     "main": "./coffee.js",
     "keywords": [
         "tern",
