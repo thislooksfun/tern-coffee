@@ -37,9 +37,14 @@ var toLineCol = function (offset, text) {
 };
 
 var toOffset = function (lineCol, text) {
-    var allLines = text.split('\n');
-    var prevText = allLines.slice(0, lineCol.line - 1).join('\n');
-    var offset = prevText.length + lineCol.column - 1;
+    var offset = lineCol.column;
+
+    if (lineCol.line > 1) {
+        var allLines = text.split('\n');
+        var prevText = allLines.slice(0, lineCol.line - 1).join('\n');
+        offset += prevText.length;
+    }
+
     return offset;
 };
 
@@ -106,7 +111,7 @@ tern.registerPlugin('coffee', function (server) {
                 callback(err);
             } else {
                 origRequest.call(server, doc, function (err, data) {
-                    console.log(data);
+                    console.log(JSON.stringify(data, true, 2));
 
                     if (!err) {
                         var compiled = doc.query && server._coffee[doc.query.file];
@@ -138,7 +143,7 @@ tern.registerPlugin('coffee', function (server) {
             });
         }
 
-        if (doc.query && isCoffee(doc.query.file) && doc.query.end) {
+        if (doc.query && isCoffee(doc.query.file) && doc.query.end != null) {
             var compiled = server._coffee[doc.query.file];
 
             if (compiled) {
