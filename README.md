@@ -16,11 +16,11 @@ cp coffee.js /usr/local/lib/node_modules/tern/plugin/
 
 ### Limitations
 
-This is work in progress. Eager loading of files is known not to work,
-as well as loading `require`d files.
+CoffeeScript's source mappings seem to map columns inaccurately. This
+renders type and references queries unusable.
 
 ### Credits
 
 This is a fork of https://github.com/othree/tern-coffee. The main
-difference is that we use Mozilla's `source-map` package to parse the
-source map.
+difference is that we use Mozilla's `source-map` package to consume
+CoffeeScript's source map.
