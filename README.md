@@ -14,10 +14,16 @@ When Tern is installed from npm globally, this should work:
 cp coffee.js /usr/local/lib/node_modules/tern/plugin/
 ```
 
+You also need to install the `source-map` module:
+
+```
+npm install -g source-map
+```
+
 ### Limitations
 
-CoffeeScript's source mappings seem to map columns inaccurately. This
-renders type and references queries unusable.
+This plugin doesn't work nearly as good as Tern for JavaScript, but is
+somewhat helpful.
 
 ### Credits
 

@@ -37,13 +37,14 @@ var toLineCol = function (offset, text) {
 };
 
 var toOffset = function (lineCol, text) {
-    var offset = lineCol.column;
+    var offset = 0;
+    var lines = text.split('\n');
 
-    if (lineCol.line > 1) {
-        var allLines = text.split('\n');
-        var prevText = allLines.slice(0, lineCol.line - 1).join('\n');
-        offset += prevText.length;
+    for (var i = 0; i < lineCol.line - 1; i++) {
+        offset += lines[i].length + 1;
     }
+
+    offset += lineCol.column + 1;
 
     return offset;
 };
@@ -60,13 +61,14 @@ var getSourcePosition = function (offset, compiled) {
 };
 
 var getGeneratedPosition = function (offset, compiled) {
-    var lineCol = toLineCol(offset, compiled.source);
-    var genLineCol = compiled.sourceMapConsumer.generatedPositionFor({
+    var coffeeLineCol = toLineCol(offset, compiled.source);
+    var jsLineCol = compiled.sourceMapConsumer.generatedPositionFor({
         source: compiled.name,
-        line: lineCol.line,
-        column: lineCol.column
+        line: coffeeLineCol.line,
+        column: coffeeLineCol.column
     });
-    var genOffset = toOffset(genLineCol, compiled.js);
+
+    var genOffset = toOffset(jsLineCol, compiled.js);
 
     return genOffset;
 };
@@ -111,17 +113,18 @@ tern.registerPlugin('coffee', function (server) {
                 callback(err);
             } else {
                 origRequest.call(server, doc, function (err, data) {
-                    console.log(JSON.stringify(data, true, 2));
-
                     if (!err) {
                         var compiled = doc.query && server._coffee[doc.query.file];
 
-                        if (data.refs) {
-                            data.refs.forEach(function (ref) {
-                                ref.start = getSourcePosition(ref.start, compiled);
-                                ref.end = getSourcePosition(ref.end, compiled);
-                            });
-                        }
+                        [ 'refs', 'changes' ].forEach(function (type) {
+                            if (data[type]) {
+                                data[type].forEach(function (ref) {
+                                    var span = ref.end - ref.start;
+                                    ref.start = getSourcePosition(ref.start, compiled) - 1;
+                                    ref.end = ref.start + span;
+                                });
+                            }
+                        });
                     }
 
                     callback(err, data);
@@ -144,22 +147,15 @@ tern.registerPlugin('coffee', function (server) {
         }
 
         if (doc.query && isCoffee(doc.query.file) && doc.query.end != null) {
-            var compiled = server._coffee[doc.query.file];
-
-            if (compiled) {
-                doc.query.end = getGeneratedPosition(doc.query.end, compiled);
-
-                doRequest();
-            } else {
-                server.options.getFile(doc.query.file, function (err, data) {
-                    if (err) {
-                        doRequest(err);
-                    } else {
-                        var compiled = server._coffee[doc.query.file];
-                        doc.query.end = getGeneratedPosition(doc.query.end, compiled);
-                    }
-                });
-            }
+            server.options.getFile(doc.query.file, function (err, data) {
+                if (err) {
+                    doRequest(err);
+                } else {
+                    var compiled = server._coffee[doc.query.file];
+                    doc.query.end = getGeneratedPosition(doc.query.end, compiled);
+                    doRequest();
+                }
+            });
         } else {
             doRequest();
         }
