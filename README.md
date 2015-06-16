@@ -11,7 +11,7 @@ JavaScript to Tern, then maps the results back to CoffeeScript source.
 Install from NPM:
 
 ```
-npm install- g tern-coffee-source-map`
+npm install- g tern-coffee-source-map
 ```
 
 You'll also need to add the plugin to your
