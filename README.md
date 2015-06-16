@@ -1,23 +1,28 @@
 Tern for CoffeeScript
 =====================
 
+[![NPM version](https://img.shields.io/npm/v/tern-coffee-source-map.svg)](https://www.npmjs.org/package/tern-coffee-source-map)
+
 Compiles CoffeeScript to JavaScript with a source map, feeds the
 JavaScript to Tern, then maps the results back to CoffeeScript source.
 
-### How to install
+### Installation
 
-Copy or symlink the file `coffee.js` to your Tern's plugins directory.
-
-When Tern is installed from npm globally, this should work:
+Install from NPM:
 
 ```
-cp coffee.js /usr/local/lib/node_modules/tern/plugin/
+npm install- g tern-coffee-source-map`
 ```
 
-You also need to install the `source-map` module:
+You'll also need to add the plugin to your
+[`.tern-project` file](http://ternjs.net/doc/manual.html#configuration):
 
 ```
-npm install -g source-map
+{
+    "plugins": {
+        "coffee": {}
+    }
+}
 ```
 
 ### Limitations
